@@ -1,7 +1,7 @@
 import { NextFunction } from "express";
-import { ValidationError } from "../../../../packages/error-handler";
+import { ValidationError } from "@packages/error-handler";
 import crypto from "crypto";
-import redis from "../../../../packages/libs/redis";
+import redis from "@packages/libs/redis";
 import { sendEmail } from "./sendMail";
 
 // auth registration validation helper
@@ -15,8 +15,7 @@ export const validateRegistrationData = (
     !name ||
     !email ||
     !password ||
-    (userType === "seller" && !phone_number) ||
-    !country
+    (userType === "seller" && (!phone_number || !country))
   ) {
     throw new ValidationError("Missing required fields!");
   }

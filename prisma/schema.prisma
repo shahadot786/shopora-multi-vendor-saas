@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,22 +9,22 @@ datasource db {
 
 // for user avatar images
 model images {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
   file_id String
-  url String
-  userId String? @unique @db.ObjectId
-  users users? @relation(fields:[userId], references:[id])
+  url     String
+  userId  String? @unique @db.ObjectId
+  users   users?  @relation(fields: [userId], references: [id])
 }
 
 // for users model
-model users{
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  name String
-  email String @unique
-  password String?
+model users {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  password  String?
   following String[]
-  avatar images?
+  avatar    images?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  imagesId String @db.ObjectId
+  imagesId  String   @db.ObjectId
 }

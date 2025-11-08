@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shopora Activation Email</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #333333;
+    "
+  >
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      role="presentation"
+      style="background-color: #f4f4f4; padding: 40px 0"
+    >
+      <tr>
+        <td align="center">
+          <table
+            width="600"
+            cellpadding="0"
+            cellspacing="0"
+            role="presentation"
+            style="
+              background-color: #ffffff;
+              border-radius: 12px;
+              overflow: hidden;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            "
+          >
+            <!-- Header -->
+            <tr>
+              <td
+                align="center"
+                style="
+                  background: linear-gradient(135deg, #007bff, #00c6ff);
+                  padding: 24px 0;
+                  color: #ffffff;
+                  font-size: 28px;
+                  font-weight: bold;
+                  letter-spacing: 0.5px;
+                "
+              >
+                Shopora
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding: 40px">
+                <p style="font-size: 18px; margin: 0 0 16px">
+                  Hi <strong><%= name %></strong>,
+                </p>
+
+                <p style="font-size: 16px; margin: 0 0 24px">
+                  Welcome to <strong>Shopora</strong> — we’re excited to have
+                  you on board! To complete your registration, please verify
+                  your account using the OTP below.
+                </p>
+
+                <div style="text-align: center; margin: 30px 0">
+                  <div
+                    style="
+                      display: inline-block;
+                      background-color: #007bff;
+                      color: #ffffff;
+                      font-size: 28px;
+                      font-weight: bold;
+                      letter-spacing: 8px;
+                      padding: 14px 24px;
+                      border-radius: 8px;
+                      text-align: center;
+                    "
+                  >
+                    <%= otp %>
+                  </div>
+                </div>
+
+                <p style="font-size: 15px; margin-bottom: 24px; color: #555555">
+                  This OTP will expire in <strong>5 minutes</strong>. Please
+                  don’t share it with anyone for your security.
+                </p>
+
+                <p style="font-size: 15px; margin-bottom: 0">
+                  Thanks,<br />
+                  <strong>The Shopora Team</strong>
+                </p>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                align="center"
+                style="
+                  background-color: #fafafa;
+                  padding: 20px;
+                  font-size: 13px;
+                  color: #888888;
+                  border-top: 1px solid #eeeeee;
+                "
+              >
+                © <%= new Date().getFullYear() %> Shopora. All rights
+                reserved.<br />
+                <a
+                  href="https://shopora.com"
+                  target="_blank"
+                  style="color: #007bff; text-decoration: none"
+                  >Visit Shopora</a
+                >
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -5,8 +5,11 @@ interface OtpVerificationProps {
   onVerify: (otp: string) => Promise<void>;
   onResend: () => Promise<void>;
   onBack?: () => void;
-  length?: number;
-  countdown?: number;
+  timer?: number;
+  canResend: boolean;
+  length: number;
+  setTimer: React.Dispatch<React.SetStateAction<number>>;
+  setCanResend: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const OtpVerification: React.FC<OtpVerificationProps> = ({
@@ -14,21 +17,22 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
   onVerify,
   onResend,
   onBack,
+  canResend,
+  timer = 0,
   length = 4,
-  countdown = 60,
+  setTimer,
+  setCanResend,
 }) => {
   const [otp, setOtp] = useState<string[]>(Array(length).fill(""));
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [canResend, setCanResend] = useState<boolean>(false);
-  const [timer, setTimer] = useState<number>(countdown);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Timer countdown for OTP resend
   useEffect(() => {
     if (timer > 0) {
       const interval = setInterval(() => {
-        setTimer((prev) => {
+        setTimer((prev: any) => {
           if (prev <= 1) {
             setCanResend(true);
             return 0;
@@ -38,6 +42,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
       }, 1000);
       return () => clearInterval(interval);
     }
+    return () => {}; // Return empty cleanup function for timer <= 0
   }, [timer]);
 
   // Focus first input on mount
@@ -119,26 +124,13 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
   };
 
   // Verify OTP
-  const handleVerifyOtp = async () => {
+  const handleVerifyOtp = () => {
     const otpValue = otp.join("");
     if (otpValue.length !== length) {
       setError(`Please enter all ${length} digits`);
       return;
     }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      await onVerify(otpValue);
-    } catch (err: any) {
-      setError(err.message || "Invalid OTP. Please try again.");
-      // Clear OTP on error
-      setOtp(Array(length).fill(""));
-      inputRefs.current[0]?.focus();
-    } finally {
-      setIsLoading(false);
-    }
+    onVerify(otpValue);
   };
 
   // Resend OTP
@@ -151,8 +143,6 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
     try {
       await onResend();
       setOtp(Array(length).fill(""));
-      setTimer(countdown);
-      setCanResend(false);
       inputRefs.current[0]?.focus();
     } catch (err: any) {
       setError(err.message || "Failed to resend OTP. Please try again.");
@@ -252,7 +242,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
           {/* Verify Button */}
           <button
             onClick={handleVerifyOtp}
-            disabled={isLoading || otp.some((digit) => digit === "")}
+            disabled={isLoading}
             className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-4"
           >
             {isLoading ? (

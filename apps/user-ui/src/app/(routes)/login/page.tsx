@@ -1,8 +1,11 @@
 "use client";
 
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import axios, { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 
 type FormData = {
   email: string;
@@ -13,8 +16,8 @@ const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
   const [rememberMe, setRememberMe] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [serverError, setSetServerError] = useState<string | null>(null);
 
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -69,11 +72,25 @@ const Login = () => {
     }
   };
 
+  // login mutation
+  const handleLoginMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/user-login`,
+        data,
+        { withCredentials: true }
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      router.push("/");
+    },
+  });
+
   // Handle form submission
   const onSubmit = async (data: FormData) => {
     try {
       setIsLoading(true);
-
       // Trim whitespace
       const sanitizedData = {
         email: data.email.trim().toLowerCase(),
@@ -85,6 +102,8 @@ const Login = () => {
         // TODO: Implement remember me functionality
         // localStorage.setItem("rememberMe", "true");
       }
+
+      handleLoginMutation.mutate(sanitizedData);
     } catch (error: any) {
     } finally {
       setIsLoading(false);
@@ -357,18 +376,6 @@ const Login = () => {
               Sign up
             </Link>
           </p>
-          {serverError && (
-            <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              {serverError}
-            </p>
-          )}
         </div>
       </div>
     </div>

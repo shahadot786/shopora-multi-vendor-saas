@@ -1,16 +1,24 @@
 "use client";
 
-import OtpVerification from "@/shared/components/OtpVerification";
+import OtpVerification from "@/components/OtpVerification";
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import axios, { AxiosError } from "axios";
 
 type FormData = {
-  fullName: string;
+  name: string;
   email: string;
   password: string;
   confirmPassword: string;
+};
+
+type ApiData = {
+  name: string;
+  email: string;
+  password: string;
 };
 
 const Signup = () => {
@@ -20,13 +28,10 @@ const Signup = () => {
   const [acceptTerms, setAcceptTerms] = useState<boolean>(false);
   const [termsError, setTermsError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [serverError, setSetServerError] = useState<string | null>(null);
-  const [showOtp, setShowOtp] = useState(true);
-  const [canResend, setCanResend] = useState(true);
-  const [timer, setTimer] = useState(60);
-  const [otp, setOtp] = useState(["", "", "", ""]);
-  const [userData, setUserData] = useState<FormData | null>(null);
-  const inputRef = useRef<(HTMLInputElement | null)[]>([]);
+  const [showOtp, setShowOtp] = useState(false);
+  const [userData, setUserData] = useState<ApiData | null>(null);
+  const [canResend, setCanResend] = useState<boolean>(false);
+  const [timer, setTimer] = useState<number>(0);
 
   const router = useRouter();
 
@@ -45,7 +50,7 @@ const Signup = () => {
   const password = watch("password");
 
   // Client-side validation
-  const validateFullName = (name: string): string | true => {
+  const validateName = (name: string): string | true => {
     if (!name || name.trim() === "") {
       return "Full name is required";
     }
@@ -174,6 +179,41 @@ const Signup = () => {
     }
   };
 
+  //handle sign up mutation
+  const signupMutation = useMutation({
+    mutationFn: async (data: ApiData) => {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/user-registration`,
+        data
+      );
+
+      return response.data;
+    },
+    onSuccess: (_, formData) => {
+      setUserData(formData);
+      setShowOtp(true);
+      setCanResend(false);
+      setTimer(60);
+    },
+  });
+
+  //otp verify mutation
+  const otpVerifyMutation = useMutation({
+    mutationFn: async (otp: string) => {
+      if (!userData) return;
+      console.log({ ...userData, otp });
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/user-verify`,
+        { ...userData, otp: otp }
+      );
+
+      return response.data;
+    },
+    onSuccess: () => {
+      router.push("/login");
+    },
+  });
+
   // Handle form submission
   const onSubmit = async (data: FormData) => {
     // Validate terms acceptance
@@ -181,18 +221,19 @@ const Signup = () => {
       setTermsError("You must accept the terms and conditions to continue");
       return;
     }
-
     try {
       setIsLoading(true);
       setTermsError("");
 
       // Sanitize data
       const sanitizedData = {
-        fullName: data.fullName.trim(),
+        name: data.name.trim(),
         email: data.email.trim().toLowerCase(),
         password: data.password,
       };
+      signupMutation.mutate(sanitizedData);
     } catch (error: any) {
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }
@@ -223,7 +264,9 @@ const Signup = () => {
   ];
 
   // Handle OTP verification
-  const handleOtpVerify = async (otp: string) => {};
+  const handleOtpVerify = async (otp: string) => {
+    otpVerifyMutation.mutate(otp);
+  };
   // Handle OTP resend
   const handleOtpResend = async () => {};
   // Handle back to signup
@@ -253,7 +296,7 @@ const Signup = () => {
                 {/* Full Name Field */}
                 <div>
                   <label
-                    htmlFor="fullName"
+                    htmlFor="name"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
                     Full Name
@@ -273,17 +316,17 @@ const Signup = () => {
                       />
                     </svg>
                     <input
-                      id="fullName"
+                      id="name"
                       type="text"
                       autoComplete="name"
-                      {...register("fullName", {
-                        validate: validateFullName,
+                      {...register("name", {
+                        validate: validateName,
                         onChange: () => {
-                          clearErrors("fullName");
+                          clearErrors("name");
                         },
                       })}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                        errors.fullName
+                        errors.name
                           ? "border-red-300 focus:ring-red-200"
                           : "border-gray-300 focus:ring-blue-200"
                       }`}
@@ -291,7 +334,7 @@ const Signup = () => {
                       disabled={isLoading}
                     />
                   </div>
-                  {errors.fullName && (
+                  {errors.name && (
                     <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
                       <svg
                         className="w-4 h-4"
@@ -304,7 +347,7 @@ const Signup = () => {
                           clipRule="evenodd"
                         />
                       </svg>
-                      {errors.fullName.message}
+                      {errors.name.message}
                     </p>
                   )}
                 </div>
@@ -648,7 +691,7 @@ const Signup = () => {
                 <button
                   type="button"
                   onClick={handleSubmit(onSubmit)}
-                  disabled={isLoading}
+                  disabled={isLoading || signupMutation.isPending}
                   className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isLoading ? (
@@ -714,33 +757,20 @@ const Signup = () => {
                   Login
                 </Link>
               </p>
-              {serverError && (
-                <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <svg
-                    className="w-4 h-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  {serverError}
-                </p>
-              )}
             </div>
           </div>
         </div>
       ) : (
         <OtpVerification
-          email={userData?.email}
+          email={userData?.email || ""}
           onVerify={handleOtpVerify}
           onResend={handleOtpResend}
           onBack={handleBackToSignup}
-          length={4} // Optional: defaults to 4
-          countdown={60} // Optional: defaults to 60 seconds
+          timer={timer}
+          setTimer={setTimer}
+          canResend={canResend}
+          setCanResend={setCanResend}
+          length={4}
         />
       )}
     </>

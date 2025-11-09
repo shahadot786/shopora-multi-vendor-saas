@@ -130,7 +130,8 @@ export const userForgotPassword = async (
   res: Response,
   next: NextFunction
 ) => {
-  await handleForgotPassword(req, res, next, "user");
+  const { email } = req.body;
+  await handleForgotPassword(req, res, next, "user", email);
 };
 
 //verify forget password otp
@@ -139,7 +140,8 @@ export const verifyUserForgotPassword = async (
   res: Response,
   next: NextFunction
 ) => {
-  await verifyForgotPasswordOtp(req, res, next);
+  const { email, otp } = req.body;
+  await verifyForgotPasswordOtp(req, res, next, email, otp);
 };
 
 //reset password

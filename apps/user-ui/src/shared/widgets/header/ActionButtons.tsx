@@ -5,26 +5,41 @@ import { Heart, ShoppingCart, User } from "lucide-react";
 import useUser from "@/hooks/useUser";
 
 const ActionButtons = () => {
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
   return (
     <div className="hidden lg:flex items-center gap-6">
-      {/* User Account */}
-      <Link
-        href="/login"
-        className="flex items-center gap-2 group hover:text-[#134686] transition-colors duration-300"
-      >
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#134686] via-[#1e5a9e] to-[#2b6cb0] flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300 shadow-md">
-          <User size={20} />
-        </div>
-        <div className="text-left">
-          <p className="text-xs text-gray-500 font-Poppins">
-            Hello, {user?.name ? user?.name : "Sign in"}
-          </p>
-          <p className="text-sm font-semibold text-gray-800 font-Roboto">
-            Account
-          </p>
-        </div>
-      </Link>
+      {/* User Section */}
+      {!isLoading && user ? (
+        <Link
+          href="/profile"
+          className="flex items-center gap-3 p-4 bg-gradient-to-r from-[#134686]/10 to-[#2b6cb0]/10 rounded-xl border border-[#134686]/30"
+        >
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#134686] via-[#1e5a9e] to-[#2b6cb0] flex items-center justify-center text-white shadow-md">
+            <User size={24} />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 font-Poppins">Hello,</p>
+            <p className="text-sm font-semibold text-gray-800 font-Roboto">
+              {user?.name?.split(" ")[0]}
+            </p>
+          </div>
+        </Link>
+      ) : (
+        <Link
+          href="/login"
+          className="flex items-center gap-3 p-4 bg-gradient-to-r from-[#134686]/10 to-[#2b6cb0]/10 rounded-xl border border-[#134686]/30"
+        >
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#134686] via-[#1e5a9e] to-[#2b6cb0] flex items-center justify-center text-white shadow-md">
+            <User size={24} />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 font-Poppins">Hello,</p>
+            <p className="text-sm font-semibold text-gray-800 font-Roboto">
+              {isLoading ? "..." : "Sign In"}
+            </p>
+          </div>
+        </Link>
+      )}
 
       {/* Wishlist */}
       <Link href="/wishlist" className="relative group">

@@ -4,11 +4,12 @@ import TopBar from "./TopBar";
 import MainHeader from "./MainHeader";
 import NavigationBar from "./NavigationBar";
 import MobileMenu from "./MobileMenu";
+import useUser from "@/hooks/useUser";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-
+  const { user, isLoading } = useUser();
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -30,7 +31,7 @@ const Header = () => {
         scrolled={scrolled}
       />
       <NavigationBar />
-      <MobileMenu menuOpen={menuOpen} />
+      <MobileMenu menuOpen={menuOpen} user={user} isLoading={isLoading} />
     </header>
   );
 };

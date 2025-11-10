@@ -32,6 +32,7 @@ const Signup = () => {
   const [userData, setUserData] = useState<ApiData | null>(null);
   const [canResend, setCanResend] = useState<boolean>(false);
   const [timer, setTimer] = useState<number>(0);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   const router = useRouter();
 
@@ -195,6 +196,13 @@ const Signup = () => {
       setCanResend(false);
       setTimer(60);
     },
+    onError: (error: AxiosError<any>) => {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to send reset email. Please try again.";
+      setErrorMessage(message);
+    },
   });
 
   //otp verify mutation
@@ -211,6 +219,13 @@ const Signup = () => {
     },
     onSuccess: () => {
       router.push("/login");
+    },
+    onError: (error: AxiosError<any>) => {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Invalid OTP. Please try again.";
+      setErrorMessage(message);
     },
   });
 
@@ -233,6 +248,7 @@ const Signup = () => {
       };
       signupMutation.mutate(sanitizedData);
     } catch (error: any) {
+      setErrorMessage("An unexpected error occurred. Please try again.");
       setIsLoading(false);
     } finally {
       setIsLoading(false);
@@ -268,7 +284,23 @@ const Signup = () => {
     otpVerifyMutation.mutate(otp);
   };
   // Handle OTP resend
-  const handleOtpResend = async () => {};
+  const handleOtpResend = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/user-registration`,
+        { userData }
+      );
+      setTimer(60);
+      setCanResend(false);
+      return response.data;
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to resend OTP. Please try again.";
+      setErrorMessage(message);
+    }
+  };
   // Handle back to signup
   const handleBackToSignup = () => {
     setShowOtp(false);
@@ -685,6 +717,25 @@ const Signup = () => {
                       {termsError}
                     </p>
                   )}
+                  {/* Error Message */}
+                  {errorMessage && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                      <svg
+                        className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-sm text-red-800">
+                        {errorMessage}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Create Account Button */}
@@ -771,6 +822,8 @@ const Signup = () => {
           canResend={canResend}
           setCanResend={setCanResend}
           length={4}
+          error={errorMessage}
+          setError={setErrorMessage}
         />
       )}
     </>

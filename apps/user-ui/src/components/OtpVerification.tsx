@@ -10,6 +10,8 @@ interface OtpVerificationProps {
   length: number;
   setTimer: React.Dispatch<React.SetStateAction<number>>;
   setCanResend: React.Dispatch<React.SetStateAction<boolean>>;
+  error: string;
+  setError: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const OtpVerification: React.FC<OtpVerificationProps> = ({
@@ -22,10 +24,11 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
   length = 4,
   setTimer,
   setCanResend,
+  error,
+  setError,
 }) => {
   const [otp, setOtp] = useState<string[]>(Array(length).fill(""));
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Timer countdown for OTP resend
@@ -58,7 +61,6 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-    setError(null);
 
     // Move to next input if value is entered
     if (value !== "" && index < length - 1) {
@@ -111,7 +113,6 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
         if (index < length) newOtp[index] = digit;
       });
       setOtp(newOtp);
-      setError(null);
 
       // Focus the next empty input or last input
       const nextEmptyIndex = newOtp.findIndex((digit) => digit === "");
@@ -138,7 +139,6 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
     if (!canResend) return;
 
     setIsLoading(true);
-    setError(null);
 
     try {
       await onResend();
@@ -166,7 +166,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
         Verify Your Email
       </h1>
       <p className="text-center text-lg font-medium py-3 text-[#00000099]">
-        Home . Sign Up . Verify
+        Home . Verify
       </p>
 
       <div className="w-full flex justify-center mt-8">

@@ -24,7 +24,7 @@ app.get("/", (req, res) => {
 });
 
 //swagger documentation
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get("/docs-json", (req, res) => {
   res.json(swaggerDocument);
 });

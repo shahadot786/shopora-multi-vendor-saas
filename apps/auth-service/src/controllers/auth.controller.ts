@@ -167,7 +167,8 @@ export const refreshUserToken = async (
 export const getUser = async (req: any, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
-    res.status(201).json({ success: true, user });
+    const { password, ...rest } = user; //exclude password
+    res.status(201).json({ success: true, user: rest });
   } catch (error) {
     return next(error);
   }
@@ -305,7 +306,6 @@ export const verifySeller = async (
 };
 
 // create the shop
-
 export const createShop = async (
   req: Request,
   res: Response,

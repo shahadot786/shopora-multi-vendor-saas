@@ -116,7 +116,6 @@ export const verifyOtp = async (
 };
 
 //handle forgot password
-
 export const handleForgotPassword = async (
   req: Request,
   res: Response,

@@ -121,11 +121,10 @@ export const handleForgotPassword = async (
   req: Request,
   res: Response,
   next: NextFunction,
-  userType: "user" | "seller"
+  userType: "user" | "seller",
+  email: string
 ) => {
   try {
-    const { email } = req.body;
-
     if (!email) {
       return next(new ValidationError("Email is required!!"));
     }
@@ -141,7 +140,7 @@ export const handleForgotPassword = async (
     await trackOtpRequest(email, next);
 
     //generate OTP and send email
-    await sendOtp(email, user.name, "forgot-password-user-email");
+    await sendOtp(user.name, email, "forgot-password-user-email");
 
     res.status(200).json({
       message: `OTP sent to your registered email (${user.email}). Please verify your account.`,
@@ -155,10 +154,11 @@ export const handleForgotPassword = async (
 export const verifyForgotPasswordOtp = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
+  email: string,
+  otp: string
 ) => {
   try {
-    const { email, otp } = req.body;
     if (!email || !otp) {
       return next(new ValidationError("Email and OTP are required!!"));
     }

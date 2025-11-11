@@ -1,6 +1,7 @@
 import "./global.css";
 import Header from "@/shared/widgets/header";
 import { Poppins, Roboto, Gugi } from "next/font/google";
+import Providers from "./Providers";
 
 export const metadata = {
   title: "Shopora",
@@ -27,9 +28,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${roboto.variable} ${poppins.variable}`}>
       <body>
-        {/* header component */}
-        <Header />
-        {children}
+        <Providers>
+          {/* header component */}
+          <Header />
+          {children}
+        </Providers>
       </body>
     </html>
   );

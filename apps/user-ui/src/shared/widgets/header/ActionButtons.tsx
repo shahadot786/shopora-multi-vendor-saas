@@ -1,8 +1,11 @@
+"use client";
 import React from "react";
 import Link from "next/link";
 import { Heart, ShoppingCart, User } from "lucide-react";
+import useUser from "@/hooks/useUser";
 
 const ActionButtons = () => {
+  const { user } = useUser();
   return (
     <div className="hidden lg:flex items-center gap-6">
       {/* User Account */}
@@ -14,7 +17,9 @@ const ActionButtons = () => {
           <User size={20} />
         </div>
         <div className="text-left">
-          <p className="text-xs text-gray-500 font-Poppins">Hello, Sign in</p>
+          <p className="text-xs text-gray-500 font-Poppins">
+            Hello, {user?.name ? user?.name : "Sign in"}
+          </p>
           <p className="text-sm font-semibold text-gray-800 font-Roboto">
             Account
           </p>

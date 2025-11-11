@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import Logo from "./Logo";
 import SearchBar from "./SearchBar";
@@ -6,10 +7,11 @@ import MobileActions from "./MobileActions";
 
 interface MainHeaderProps {
   menuOpen: boolean;
+  scrolled: boolean;
   setMenuOpen: (open: boolean) => void;
 }
 
-const MainHeader = ({ menuOpen, setMenuOpen }: MainHeaderProps) => {
+const MainHeader = ({ menuOpen, setMenuOpen, scrolled }: MainHeaderProps) => {
   return (
     <div className="border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

@@ -11,7 +11,7 @@ const Header = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 50);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -24,7 +24,11 @@ const Header = () => {
       }`}
     >
       <TopBar />
-      <MainHeader menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      <MainHeader
+        menuOpen={menuOpen}
+        setMenuOpen={setMenuOpen}
+        scrolled={scrolled}
+      />
       <NavigationBar />
       <MobileMenu menuOpen={menuOpen} />
     </header>

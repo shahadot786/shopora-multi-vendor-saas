@@ -1,6 +1,8 @@
+"use client";
 import React from "react";
 import Link from "next/link";
 import { User } from "lucide-react";
+import useUser from "@/hooks/useUser";
 
 const mobileNavLinks = [
   { name: "Home", href: "/" },
@@ -17,6 +19,7 @@ interface MobileMenuProps {
 
 const MobileMenu = ({ menuOpen }: MobileMenuProps) => {
   if (!menuOpen) return null;
+  const { user } = useUser();
 
   return (
     <div className="lg:hidden bg-white shadow-2xl border-t border-gray-200">
@@ -31,7 +34,7 @@ const MobileMenu = ({ menuOpen }: MobileMenuProps) => {
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-800 font-Roboto">
-              Sign In
+              {user?.name ? user?.name : "Sign In"}
             </p>
             <p className="text-xs text-gray-500 font-Poppins">
               Access your account

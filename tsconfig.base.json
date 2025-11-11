@@ -19,7 +19,13 @@
     "target": "es2022",
     "customConditions": ["@shopora/source"],
     "paths": {
-      "@packages/*": ["./packages/*"]
+      "@packages/*": ["./packages/*"],
+      "@shopora/ui": ["./libs/ui/index.ts"],
+      "@shopora/constants": ["./libs/constants/index.ts"],
+      "@shopora/utils": ["./libs/utils/index.ts"],
+      "@shopora/types": ["./libs/types/index.ts"],
+      "@shopora/hooks": ["./libs/hooks/index.ts"],
+      "@shopora/providers": ["./libs/providers/index.ts"]
     }
   }
 }

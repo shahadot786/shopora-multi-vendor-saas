@@ -1,82 +1,181 @@
-# Shopora
+# 🛍️ Shopora — Full Stack eCommerce Platform
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer">
+  <img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45" />
+</a>
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+Shopora is a **modern full-stack eCommerce platform** built using an **Nx monorepo** architecture.  
+It integrates multiple services — such as authentication, product management, and order processing — under a single scalable workspace.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+---
 
-## Finish your CI setup
+## 🚀 Tech Stack Overview
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/xKdaZsbxXl)
+### 🧩 Backend
 
+- **Node.js + Express.js**
+- **Prisma ORM + MongoDB**
+- **JWT Authentication**
+- **Redis** (caching & rate limiting)
+- **Nodemailer** (email service)
 
-## Run tasks
+### 💻 Frontend
 
-To run the dev server for your app, use:
+- **React / Next.js**
+- **React Hook Form** for forms
+- **TanStack Query** for data fetching
+- **Tailwind CSS** for styling
+- **Axios** for API calls
 
-```sh
-npx nx serve auth-service
+### ⚙️ Dev Tools
+
+- **Nx Monorepo** for code organization
+- **TypeScript** for static typing
+- **Swagger Autogen** for API documentation
+- **Webpack** for builds
+
+---
+
+## 🧱 Project Structure
+
+```bash
+apps/
+ ├── api-gateway/       # Main Express API gateway
+ ├── auth-service/      # Authentication microservice
+ ├── product-service/   # Product & category management
+ ├── order-service/     # Orders & payments
+ └── web/               # Frontend (Next.js or React app)
+
+libs/
+ ├── shared/            # Shared utilities, types, and constants
+ └── ui/                # Shared React components
 ```
 
-To create a production bundle:
+---
 
-```sh
-npx nx build auth-service
+## 🧰 Commands
+
+Run the development server for any app:
+
+```bash
+npx nx serve <app-name>
 ```
 
-To see all available targets to run for a project, run:
+Build an app for production:
 
-```sh
-npx nx show project auth-service
+```bash
+npx nx build <app-name>
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+View dependency graph:
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/node:app demo
+```bash
+npx nx graph
 ```
 
-To generate a new library, use:
+List available tasks for a project:
 
-```sh
-npx nx g @nx/node:lib mylib
+```bash
+npx nx show project <project-name>
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+---
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 🧑‍💻 Development Setup
 
+1. **Install dependencies**
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+   ```bash
+   npm install
+   ```
 
-## Install Nx Console
+2. **Set environment variables**
+   Create `.env` files for each service inside their respective `apps/<service>` folder.
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+3. **Run the backend services**
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+   ```bash
+   npx nx serve auth-service
+   npx nx serve api-gateway
+   ```
 
-## Useful links
+4. **Run the frontend**
+   ```bash
+   npx nx serve web
+   ```
 
-Learn more:
+---
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 🗓️ Regular Update Pattern
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Log ongoing progress and features:
+
+### ✅ Completed Features
+
+- [x] Authentication & Authorization (JWT + Refresh Token)
+- [x] User Registration & Email Verification
+- [x] Seller Registration & Email Verification
+  <!-- - [x] Product CRUD + Pagination -->
+  <!-- - [x] Cart & Checkout Flow -->
+
+### 🚧 In Progress
+
+- [ ] Admin Dashboard (Sales Analytics)
+- [ ] Payment Gateway Integration
+
+### 🧩 Upcoming
+
+- [ ] Real-time Order Tracking (WebSocket)
+- [ ] Product Recommendation Engine
+- [ ] CI/CD Pipeline Integration
+
+---
+
+## 🧾 Notes
+
+- Keep your services modular and independent.
+- Use Redis for caching + rate limiting.
+- Update this file regularly to track project growth and structure.
+
+---
+
+## 📚 Useful Nx Commands
+
+| Command                                  | Description                          |
+| ---------------------------------------- | ------------------------------------ |
+| `npx nx graph`                           | Visualize workspace dependency graph |
+| `npx nx run-many --target=serve --all`   | Run all apps simultaneously          |
+| `npx nx build-many --target=build --all` | Build all projects                   |
+| `npx nx list`                            | List installed Nx plugins            |
+
+---
+
+## 🤝 Contributing
+
+To add new projects, use Nx generators:
+
+```bash
+npx nx g @nx/node:app new-service
+npx nx g @nx/react:app new-frontend
+```
+
+For libraries:
+
+```bash
+npx nx g @nx/js:lib shared-utils
+```
+
+---
+
+## 🧠 Learn More
+
+- [Nx Documentation](https://nx.dev)
+- [React Documentation](https://react.dev)
+- [Express.js Documentation](https://expressjs.com)
+- [Prisma ORM Docs](https://www.prisma.io/docs)
+- [MongoDB Docs](https://www.mongodb.com/docs/)
+
+---
+
+**Author:** MD. Shahadot Hossain  
+**Last Updated:** 2025-11-11

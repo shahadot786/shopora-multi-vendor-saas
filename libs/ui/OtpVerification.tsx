@@ -14,7 +14,7 @@ interface OtpVerificationProps {
   setError: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const OtpVerification: React.FC<OtpVerificationProps> = ({
+export const OtpVerification: React.FC<OtpVerificationProps> = ({
   email,
   onVerify,
   onResend,
@@ -305,5 +305,3 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
     </div>
   );
 };
-
-export default OtpVerification;

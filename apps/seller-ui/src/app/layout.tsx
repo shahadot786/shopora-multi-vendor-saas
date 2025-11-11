@@ -1,5 +1,5 @@
+import { Providers } from "@shopora/providers";
 import "./global.css";
-import Providers from "./Providers";
 
 export const metadata = {
   title: "Shopora Seller",

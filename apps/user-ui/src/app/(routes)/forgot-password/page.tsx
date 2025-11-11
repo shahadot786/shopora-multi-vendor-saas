@@ -6,7 +6,8 @@ import React, { useState } from "react";
 import { set, useForm } from "react-hook-form";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import OtpVerification from "@/components/OtpVerification";
+import { OtpVerification } from "@shopora/ui";
+import { validateEmail, validatePassword } from "@shopora/utils";
 
 type FormData = {
   email: string;
@@ -49,53 +50,6 @@ const ForgotPassword = () => {
     mode: "onBlur",
     reValidateMode: "onChange",
   });
-
-  // Client-side validation
-  const validateEmail = (email: string): string | true => {
-    if (!email || email.trim() === "") {
-      return "Email is required";
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return "Please enter a valid email address";
-    }
-
-    if (email.length > 254) {
-      return "Email is too long";
-    }
-
-    return true;
-  };
-
-  // Password validation
-  const validatePassword = (password: string): string | true => {
-    if (!password || password.trim() === "") {
-      return "Password is required";
-    }
-
-    if (password.length < 8) {
-      return "Password must be at least 8 characters";
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      return "Password must contain at least one uppercase letter";
-    }
-
-    if (!/[a-z]/.test(password)) {
-      return "Password must contain at least one lowercase letter";
-    }
-
-    if (!/[0-9]/.test(password)) {
-      return "Password must contain at least one number";
-    }
-
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      return "Password must contain at least one special character";
-    }
-
-    return true;
-  };
 
   // Forgot password mutation
   const forgotPasswordMutation = useMutation({

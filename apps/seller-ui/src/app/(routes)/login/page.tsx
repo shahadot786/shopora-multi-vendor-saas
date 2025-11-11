@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import axios, { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
+import { validateEmail, validatePassword } from "@shopora/utils";
 
 type FormData = {
   email: string;
@@ -26,40 +27,6 @@ const Login = () => {
     mode: "onBlur",
     reValidateMode: "onChange",
   });
-
-  // Client-side validation
-  const validateEmail = (email: string): string | true => {
-    if (!email || email.trim() === "") {
-      return "Email is required";
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return "Please enter a valid email address";
-    }
-
-    if (email.length > 254) {
-      return "Email is too long";
-    }
-
-    return true;
-  };
-
-  const validatePassword = (password: string): string | true => {
-    if (!password || password.trim() === "") {
-      return "Password is required";
-    }
-
-    if (password.length < 6) {
-      return "Password must be at least 6 characters";
-    }
-
-    if (password.length > 128) {
-      return "Password is too long";
-    }
-
-    return true;
-  };
 
   // Handle Google Sign-In
   const handleGoogleSignIn = async () => {

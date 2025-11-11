@@ -1,8 +1,16 @@
 "use client";
-import OtpVerification from "@/components/OtpVerification";
-import { COUNTRIES } from "@/constants/countries";
+
+import { OtpVerification } from "@shopora/ui";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import {
+  validateName,
+  validateEmail,
+  validatePassword,
+  getPasswordStrength,
+  validatePhone,
+} from "@shopora/utils";
+import { COUNTRIES } from "@shopora/constants";
 
 const BUSINESS_TYPES = [
   "Individual / Sole Proprietor",
@@ -51,59 +59,6 @@ export default function SellerSignup() {
     { number: 2, name: "Shop Details" },
     { number: 3, name: "Payment" },
   ];
-
-  // Validation functions
-  const validateName = (name: string) => {
-    if (!name || name.trim().length < 2)
-      return "Name must be at least 2 characters";
-    if (name.trim().length > 50) return "Name is too long (max 50 characters)";
-    if (!/^[a-zA-Z\s'-]+$/.test(name.trim()))
-      return "Name can only contain letters, spaces, hyphens, and apostrophes";
-    return true;
-  };
-
-  const validateEmail = (email: string) => {
-    if (!email) return "Email is required";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      return "Please enter a valid email address";
-    if (email.length > 254) return "Email is too long";
-    return true;
-  };
-
-  const validatePhone = (phone: string) => {
-    if (!phone) return "Phone number is required";
-    if (!/^[0-9+\-\s()]+$/.test(phone)) return "Invalid phone number format";
-    if (phone.replace(/[^0-9]/g, "").length < 7)
-      return "Phone number too short";
-    return true;
-  };
-
-  const validatePassword = (password: string) => {
-    if (!password) return "Password is required";
-    if (password.length < 8) return "Password must be at least 8 characters";
-    if (password.length > 128)
-      return "Password is too long (max 128 characters)";
-    if (!/[A-Z]/.test(password))
-      return "Must contain at least one uppercase letter";
-    if (!/[a-z]/.test(password))
-      return "Must contain at least one lowercase letter";
-    if (!/\d/.test(password)) return "Must contain at least one number";
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password))
-      return "Must contain at least one special character";
-    return true;
-  };
-
-  // Password strength indicator
-  const getPasswordStrength = (password: string) => {
-    if (!password) return 0;
-    let strength = 0;
-    if (password.length >= 8) strength++;
-    if (password.length >= 12) strength++;
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-    if (/\d/.test(password)) strength++;
-    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) strength++;
-    return Math.min(strength, 4);
-  };
 
   const password = accountForm.watch("password");
   const passwordStrength = getPasswordStrength(password || "");

@@ -8,43 +8,35 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "plugins": [{ "name": "next" }],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"],
+      "@shopora/ui": ["../../libs/ui/index.ts"],
+      "@shopora/constants": ["../../libs/constants/index.ts"],
+      "@shopora/utils": ["../../libs/utils/index.ts"],
+      "@shopora/types": ["../../libs/types/index.ts"],
+      "@shopora/hooks": ["../../libs/hooks/index.ts"],
+      "@shopora/providers": ["../../libs/providers/index.ts"]
     },
-    "outDir": "dist",
-    "rootDir": "src",
-    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+    "outDir": "../../dist/out-tsc",
+    "rootDir": "../..",
+    "tsBuildInfoFile": "../../dist/out-tsc/apps/seller-ui.tsbuildinfo"
   },
   "include": [
-    "../../apps/seller-ui/.next/types/**/*.ts",
-    "../../dist/apps/seller-ui/.next/types/**/*.ts",
     "next-env.d.ts",
-    "src/**/*.js",
-    "src/**/*.jsx",
-    "src/**/*.ts",
-    "src/**/*.tsx",
+    "src/**/*",
+    "../../libs/**/*",
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "out-tsc",
-    "dist",
     "node_modules",
+    "dist",
+    "out-tsc",
     "jest.config.ts",
     "src/**/*.spec.ts",
     "src/**/*.test.ts",

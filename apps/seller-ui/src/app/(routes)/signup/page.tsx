@@ -2,7 +2,7 @@
 
 import { OtpVerification } from "@shopora/ui";
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import {
   validateName,
   validateEmail,
@@ -10,34 +10,39 @@ import {
   getPasswordStrength,
   validatePhone,
 } from "@shopora/utils";
-import { COUNTRIES } from "@shopora/constants";
-
-const BUSINESS_TYPES = [
-  "Individual / Sole Proprietor",
-  "Company / Corporation",
-  "Partnership",
-  "Limited Liability Company (LLC)",
-  "Non-profit Organization",
-];
+import {
+  BUSINESS_TYPES,
+  COUNTRIES,
+  OPENING_HOURS_OPTIONS,
+  SHOP_CATEGORIES,
+} from "@shopora/constants";
+import { useMutation } from "@tanstack/react-query";
+import axios, { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 
 interface AccountFormData {
   name: string;
   email: string;
-  phone: string;
-  countryCode: string;
+  phone_number: string;
+  country?: string;
   password: string;
-  confirmPassword: string;
+  confirmPassword?: string;
 }
 
 interface ShopFormData {
-  shopName: string;
-  shopDescription: string;
-  businessType: string;
+  name: string;
+  description: string;
+  address: string;
+  opening_hours: string;
+  custom_opening_hours?: string;
+  website?: string;
+  category: string;
   taxId?: string;
-  shopAddress: string;
-  shopCity: string;
-  shopZipCode: string;
-  shopCountry: string;
+  businessType: string;
+  zipCode: string;
+  city: string;
+  state: string;
+  country: string;
 }
 
 export default function SellerSignup() {
@@ -46,13 +51,15 @@ export default function SellerSignup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [accountData, setAccountData] = useState<AccountFormData | null>(null);
+  const [sellerData, setSellerData] = useState<AccountFormData | null>(null);
   const [shopData, setShopData] = useState<ShopFormData | null>(null);
   const [otpTimer, setOtpTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
+  const [sellerId, setSellerId] = useState<string | null>(null);
 
-  const accountForm = useForm({ mode: "onBlur" });
-  const shopForm = useForm({ mode: "onBlur" });
+  const accountForm = useForm<AccountFormData>({ mode: "onBlur" });
+  const shopForm = useForm<ShopFormData>({ mode: "onBlur" });
+  const router = useRouter();
 
   const steps = [
     { number: 1, name: "Account" },
@@ -70,9 +77,81 @@ export default function SellerSignup() {
     "bg-yellow-500",
     "bg-green-500",
   ];
+  //handle sign up mutation
+  const signupMutation = useMutation({
+    mutationFn: async (data: AccountFormData) => {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/seller-registration`,
+        data
+      );
 
+      return response.data;
+    },
+    onSuccess: (_, formData) => {
+      setSellerData(formData);
+      setCurrentStep(1.5); // OTP verification
+      setOtpTimer(60);
+      setCanResend(false);
+      setIsLoading(false);
+    },
+    onError: (error: AxiosError<any>) => {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to send OTP. Please try again.";
+      setErrorMessage(message);
+      setIsLoading(false);
+    },
+  });
+  //otp verify mutation
+  const otpVerifyMutation = useMutation({
+    mutationFn: async (otp: string) => {
+      if (!sellerData) return;
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/seller-verify`,
+        { ...sellerData, otp: otp }
+      );
+
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setSellerId(data?.seller?.id);
+      setCurrentStep(2);
+      setIsLoading(false);
+    },
+    onError: (error: AxiosError<any>) => {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Invalid OTP. Please try again.";
+      setErrorMessage(message);
+    },
+  });
+
+  //create shop mutation
+  const createShopMutation = useMutation({
+    mutationFn: async (data: ShopFormData) => {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/create-shop`,
+        data
+      );
+
+      return response.data;
+    },
+    onSuccess: () => {
+      setIsLoading(false);
+    },
+    onError: (error: AxiosError<any>) => {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to create shop. Please try again.";
+      setErrorMessage(message);
+      setIsLoading(false);
+    },
+  });
   // Step 1: Account Creation Submit
-  const handleAccountSubmit = async (data: any) => {
+  const handleAccountSubmit = async (data: AccountFormData) => {
     if (data.password !== data.confirmPassword) {
       setErrorMessage("Passwords do not match");
       return;
@@ -80,16 +159,9 @@ export default function SellerSignup() {
 
     setErrorMessage("");
     setIsLoading(true);
-
+    const { confirmPassword, ...rest } = data; //exclude confirmPassword
     try {
-      // TODO: API call to register account
-      setTimeout(() => {
-        setAccountData(data);
-        setCurrentStep(1.5); // OTP verification
-        setOtpTimer(60);
-        setCanResend(false);
-        setIsLoading(false);
-      }, 1000);
+      signupMutation.mutate(rest);
     } catch (error: any) {
       setErrorMessage(
         error.response?.data?.message ||
@@ -100,60 +172,58 @@ export default function SellerSignup() {
   };
 
   // OTP Verification
-  const handleOtpVerify = async () => {
+  const handleOtpVerify = async (otp: string) => {
     setErrorMessage("");
     setIsLoading(true);
 
     try {
-      // TODO: API call to verify OTP
-      setTimeout(() => {
-        setCurrentStep(2);
-        setIsLoading(false);
-      }, 1000);
+      otpVerifyMutation.mutate(otp);
     } catch (error: any) {
       setErrorMessage(
         error.response?.data?.message || "Invalid OTP. Please try again."
       );
       setIsLoading(false);
-      throw error;
     }
   };
 
+  // Handle OTP resend
   const handleOtpResend = async () => {
     setErrorMessage("");
     setIsLoading(true);
-
     try {
-      // TODO: API call to resend OTP
-      setTimeout(() => {
-        setOtpTimer(60);
-        setCanResend(false);
-        setIsLoading(false);
-        alert("OTP resent successfully!");
-      }, 1000);
-    } catch (error: any) {
-      setErrorMessage(error.response?.data?.message || "Failed to resend OTP.");
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/seller-registration`,
+        { ...sellerData }
+      );
+
+      setOtpTimer(60);
+      setCanResend(false);
       setIsLoading(false);
-      throw error;
+      return response.data;
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to resend OTP. Please try again.";
+      setErrorMessage(message);
     }
   };
 
   const handleBackToSignup = () => {
     setCurrentStep(1);
   };
-
   // Step 2: Shop Details Submit
   const handleShopSubmit = async (data: any) => {
     setErrorMessage("");
     setIsLoading(true);
-
     try {
-      // TODO: API call to save shop details
-      setTimeout(() => {
-        setShopData(data);
-        setCurrentStep(3);
-        setIsLoading(false);
-      }, 1000);
+      if (sellerId) {
+        data.sellerId = sellerId;
+      }
+      const { custom_opening_hours, ...rest } = data;
+      setShopData(rest);
+      setCurrentStep(3);
+      setIsLoading(false);
     } catch (error: any) {
       setErrorMessage(
         error.response?.data?.message || "Failed to save shop details."
@@ -168,11 +238,15 @@ export default function SellerSignup() {
     setIsLoading(true);
 
     try {
-      // TODO: API call to initiate Stripe connection
-      setTimeout(() => {
-        alert("Registration complete! Redirecting to login...");
-        setIsLoading(false);
-      }, 1500);
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/create-stripe-link`,
+        { sellerId }
+      );
+      setIsLoading(false);
+      if (response.data.url) {
+        createShopMutation.mutate(shopData as ShopFormData);
+        window.location.href = response.data.url;
+      }
     } catch (error: any) {
       setErrorMessage(
         error.response?.data?.message || "Failed to connect payment account."
@@ -379,14 +453,14 @@ export default function SellerSignup() {
                     </label>
                     <input
                       type="tel"
-                      {...accountForm.register("phone", {
+                      {...accountForm.register("phone_number", {
                         validate: validatePhone,
                       })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                       placeholder="+1234567890"
                       disabled={isLoading}
                     />
-                    {accountForm.formState.errors.phone && (
+                    {accountForm.formState.errors.phone_number && (
                       <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
                         <svg
                           className="w-4 h-4"
@@ -399,9 +473,9 @@ export default function SellerSignup() {
                             clipRule="evenodd"
                           />
                         </svg>
-                        {typeof accountForm.formState.errors.phone.message ===
-                        "string"
-                          ? accountForm.formState.errors.phone.message
+                        {typeof accountForm.formState.errors.phone_number
+                          .message === "string"
+                          ? accountForm.formState.errors.phone_number.message
                           : ""}
                       </p>
                     )}
@@ -413,7 +487,7 @@ export default function SellerSignup() {
                       Country
                     </label>
                     <select
-                      {...accountForm.register("countryCode", {
+                      {...accountForm.register("country", {
                         required: "Country is required",
                       })}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
@@ -421,12 +495,12 @@ export default function SellerSignup() {
                     >
                       <option value="">Select Country</option>
                       {COUNTRIES.map((country) => (
-                        <option key={country.code} value={country.code}>
-                          {country.name} ({country.dial})
+                        <option key={country.name} value={country.name}>
+                          {country.name}
                         </option>
                       ))}
                     </select>
-                    {accountForm.formState.errors.countryCode && (
+                    {accountForm.formState.errors.country && (
                       <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
                         <svg
                           className="w-4 h-4"
@@ -439,9 +513,9 @@ export default function SellerSignup() {
                             clipRule="evenodd"
                           />
                         </svg>
-                        {typeof accountForm.formState.errors.countryCode
-                          .message === "string"
-                          ? accountForm.formState.errors.countryCode.message
+                        {typeof accountForm.formState.errors.country.message ===
+                        "string"
+                          ? accountForm.formState.errors.country.message
                           : ""}
                       </p>
                     )}
@@ -673,7 +747,7 @@ export default function SellerSignup() {
           {/* STEP 1.5: OTP Verification */}
           {currentStep === 1.5 && (
             <OtpVerification
-              email={accountData?.email || ""}
+              email={sellerData?.email || ""}
               onVerify={handleOtpVerify}
               onResend={handleOtpResend}
               onBack={handleBackToSignup}
@@ -715,82 +789,185 @@ export default function SellerSignup() {
               </div>
 
               <div className="space-y-6">
+                {/* Shop Name */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Shop Name
                   </label>
                   <input
                     type="text"
-                    {...shopForm.register("shopName", {
+                    {...shopForm.register("name", {
                       required: "Shop name is required",
                       minLength: {
-                        value: 3,
-                        message: "Shop name must be at least 3 characters",
+                        value: 5,
+                        message: "Shop name must be at least 5 characters",
                       },
                     })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
                     placeholder="My Awesome Shop"
                     disabled={isLoading}
                   />
-                  {shopForm.formState.errors.shopName && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      {typeof shopForm.formState.errors.shopName.message ===
-                      "string"
-                        ? shopForm.formState.errors.shopName.message
-                        : ""}
+                  {shopForm.formState.errors.name && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {shopForm.formState.errors.name.message?.toString()}
                     </p>
                   )}
                 </div>
 
+                {/* Description */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Shop Description
+                    Description
                   </label>
                   <textarea
-                    {...shopForm.register("shopDescription", {
+                    {...shopForm.register("description", {
                       required: "Description is required",
                       minLength: {
                         value: 20,
                         message: "Description must be at least 20 characters",
                       },
+                      maxLength: {
+                        value: 100,
+                        message: "Description cannot exceed 100 characters",
+                      },
                     })}
                     rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-                    placeholder="Describe what you sell and what makes your shop unique..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition resize-none"
+                    placeholder="Describe your shop and products..."
                     disabled={isLoading}
                   />
-                  {shopForm.formState.errors.shopDescription && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      {typeof shopForm.formState.errors.shopDescription
-                        .message === "string"
-                        ? shopForm.formState.errors.shopDescription.message
-                        : ""}
+                  {shopForm.formState.errors.description && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {shopForm.formState.errors.description.message?.toString()}
                     </p>
                   )}
                 </div>
 
+                {/* Address */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    {...shopForm.register("address", {
+                      required: "Address is required",
+                    })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
+                    placeholder="123 Main Street"
+                    disabled={isLoading}
+                  />
+                  {shopForm.formState.errors.address && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {shopForm.formState.errors.address.message?.toString()}
+                    </p>
+                  )}
+                </div>
+
+                {/* Opening Hours */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Opening Hours
+                  </label>
+                  <select
+                    {...shopForm.register("opening_hours", {
+                      required: "Opening hours is required",
+                    })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
+                    disabled={isLoading}
+                  >
+                    <option value="">Select Opening Hours</option>
+                    {OPENING_HOURS_OPTIONS.map(({ key, label }) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                  {shopForm.formState.errors.opening_hours && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {shopForm.formState.errors.opening_hours.message?.toString()}
+                    </p>
+                  )}
+                </div>
+                {shopForm.watch("opening_hours") === "custom" && (
+                  <div>
+                    <input
+                      type="text"
+                      {...shopForm.register("custom_opening_hours", {
+                        required: "Please specify your opening hours",
+                      })}
+                      placeholder="e.g., Mon - Fri, 8 AM - 4 PM"
+                      className="w-full mt-2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
+                    />
+                    {shopForm.formState.errors.custom_opening_hours && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {shopForm.formState.errors.custom_opening_hours.message?.toString()}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Website */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Website
+                  </label>
+                  <input
+                    type="url"
+                    {...shopForm.register("website", {
+                      pattern: {
+                        value:
+                          /^(https?:\/\/)?([\w-]+(\.[\w-]+)+)(\/[\w-./?%&=]*)?$/,
+                        message: "Please enter a valid URL",
+                      },
+                    })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
+                    placeholder="https://myshop.com"
+                    disabled={isLoading}
+                  />
+                </div>
+
+                {/* Category */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Category
+                  </label>
+                  <select
+                    {...shopForm.register("category", {
+                      required: "Category is required",
+                    })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
+                    disabled={isLoading}
+                  >
+                    <option value="">Select Category</option>
+                    {SHOP_CATEGORIES.map((cat) => (
+                      <option key={cat.key} value={cat.key}>
+                        {cat.label}
+                      </option>
+                    ))}
+                  </select>
+                  {shopForm.formState.errors.category && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {shopForm.formState.errors.category.message?.toString()}
+                    </p>
+                  )}
+                </div>
+
+                {/* Tax ID */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Tax ID / Business Registration Number
+                  </label>
+                  <input
+                    type="text"
+                    {...shopForm.register("taxId")}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
+                    placeholder="Optional"
+                    disabled={isLoading}
+                  />
+                </div>
+
+                {/* Business Type */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Business Type
@@ -799,7 +976,7 @@ export default function SellerSignup() {
                     {...shopForm.register("businessType", {
                       required: "Business type is required",
                     })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
                     disabled={isLoading}
                   >
                     <option value="">Select Business Type</option>
@@ -810,76 +987,13 @@ export default function SellerSignup() {
                     ))}
                   </select>
                   {shopForm.formState.errors.businessType && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      {typeof shopForm.formState.errors.businessType.message ===
-                      "string"
-                        ? shopForm.formState.errors.businessType.message
-                        : ""}
+                    <p className="mt-2 text-sm text-red-600">
+                      {shopForm.formState.errors.businessType.message?.toString()}
                     </p>
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Tax ID / Business Registration Number
-                  </label>
-                  <input
-                    type="text"
-                    {...shopForm.register("taxId")}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="Optional"
-                    disabled={isLoading}
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Required for tax reporting in some countries
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Shop Address
-                  </label>
-                  <input
-                    type="text"
-                    {...shopForm.register("shopAddress", {
-                      required: "Address is required",
-                    })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="123 Main Street"
-                    disabled={isLoading}
-                  />
-                  {shopForm.formState.errors.shopAddress && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      {typeof shopForm.formState.errors.shopAddress.message ===
-                      "string"
-                        ? shopForm.formState.errors.shopAddress.message
-                        : ""}
-                    </p>
-                  )}
-                </div>
-
+                {/* Location Fields */}
                 <div className="grid md:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -887,30 +1001,36 @@ export default function SellerSignup() {
                     </label>
                     <input
                       type="text"
-                      {...shopForm.register("shopCity", {
+                      {...shopForm.register("city", {
                         required: "City is required",
                       })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
                       placeholder="New York"
                       disabled={isLoading}
                     />
-                    {shopForm.formState.errors.shopCity && (
-                      <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                        <svg
-                          className="w-4 h-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        {typeof shopForm.formState.errors.shopCity.message ===
-                        "string"
-                          ? shopForm.formState.errors.shopCity.message
-                          : ""}
+                    {shopForm.formState.errors.city && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {shopForm.formState.errors.city.message?.toString()}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      State
+                    </label>
+                    <input
+                      type="text"
+                      {...shopForm.register("state", {
+                        required: "State is required",
+                      })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
+                      placeholder="California"
+                      disabled={isLoading}
+                    />
+                    {shopForm.formState.errors.state && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {shopForm.formState.errors.state.message?.toString()}
                       </p>
                     )}
                   </div>
@@ -921,78 +1041,52 @@ export default function SellerSignup() {
                     </label>
                     <input
                       type="text"
-                      {...shopForm.register("shopZipCode", {
+                      {...shopForm.register("zipCode", {
                         required: "Zip code is required",
                       })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
                       placeholder="10001"
                       disabled={isLoading}
                     />
-                    {shopForm.formState.errors.shopZipCode && (
-                      <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                        <svg
-                          className="w-4 h-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        {typeof shopForm.formState.errors.shopZipCode
-                          .message === "string"
-                          ? shopForm.formState.errors.shopZipCode.message
-                          : ""}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Country
-                    </label>
-                    <select
-                      {...shopForm.register("shopCountry", {
-                        required: "Country is required",
-                      })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                      disabled={isLoading}
-                    >
-                      <option value="">Select</option>
-                      {COUNTRIES.map((country) => (
-                        <option key={country.code} value={country.code}>
-                          {country.name}
-                        </option>
-                      ))}
-                    </select>
-                    {shopForm.formState.errors.shopCountry && (
-                      <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                        <svg
-                          className="w-4 h-4"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        {typeof shopForm.formState.errors.shopCountry
-                          .message === "string"
-                          ? shopForm.formState.errors.shopCountry.message
-                          : ""}
+                    {shopForm.formState.errors.zipCode && (
+                      <p className="mt-2 text-sm text-red-600">
+                        {shopForm.formState.errors.zipCode.message?.toString()}
                       </p>
                     )}
                   </div>
                 </div>
 
+                {/* Country */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Country
+                  </label>
+                  <select
+                    {...shopForm.register("country", {
+                      required: "Country is required",
+                    })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition"
+                    disabled={isLoading}
+                  >
+                    <option value="">Select Country</option>
+                    {COUNTRIES.map((country) => (
+                      <option key={country.code} value={country.name}>
+                        {country.name}
+                      </option>
+                    ))}
+                  </select>
+                  {shopForm.formState.errors.country && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {shopForm.formState.errors.country.message?.toString()}
+                    </p>
+                  )}
+                </div>
+
+                {/* Navigation Buttons */}
                 <div className="flex gap-4">
                   <button
                     type="button"
-                    onClick={() => setCurrentStep(1.5)}
+                    onClick={() => setCurrentStep(1)}
                     className="flex-1 border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 transition"
                   >
                     Back
@@ -1001,7 +1095,7 @@ export default function SellerSignup() {
                     type="button"
                     onClick={shopForm.handleSubmit(handleShopSubmit)}
                     disabled={isLoading}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {isLoading ? (
                       <>

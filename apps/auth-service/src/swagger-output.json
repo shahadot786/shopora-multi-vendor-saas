@@ -2,12 +2,14 @@
   "swagger": "2.0",
   "info": {
     "title": "Auth Service API",
-    "description": "Automatically generated Swagger docs",
+    "description": "Generated Swagger documentation for Auth Service",
     "version": "1.0.0"
   },
   "host": "localhost:6001",
-  "basePath": "/api",
-  "schemes": ["http"],
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
   "paths": {
     "/user-registration": {
       "post": {
@@ -260,6 +262,67 @@
         }
       }
     },
+    "/seller-login": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "example": "any"
+                },
+                "password": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/seller-logged-in": {
+      "get": {
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    },
+    "/create-stripe-link": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "sellerId": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/create-shop": {
       "post": {
         "description": "",
@@ -273,7 +336,7 @@
                 "name": {
                   "example": "any"
                 },
-                "bio": {
+                "description": {
                   "example": "any"
                 },
                 "address": {
@@ -289,6 +352,24 @@
                   "example": "any"
                 },
                 "sellerId": {
+                  "example": "any"
+                },
+                "taxId": {
+                  "example": "any"
+                },
+                "businessType": {
+                  "example": "any"
+                },
+                "zipCode": {
+                  "example": "any"
+                },
+                "city": {
+                  "example": "any"
+                },
+                "state": {
+                  "example": "any"
+                },
+                "country": {
                   "example": "any"
                 }
               }

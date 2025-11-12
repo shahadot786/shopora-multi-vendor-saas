@@ -98,7 +98,6 @@ const Signup = () => {
   const otpVerifyMutation = useMutation({
     mutationFn: async (otp: string) => {
       if (!userData) return;
-      console.log({ ...userData, otp });
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_SERVER_URI}/api/user-verify`,
         { ...userData, otp: otp }

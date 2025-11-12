@@ -115,6 +115,7 @@ Log ongoing progress and features:
 - [x] Authentication & Authorization (JWT + Refresh Token)
 - [x] User Registration & Email Verification
 - [x] Seller Registration & Email Verification
+- [x] Seller Shop Creation & Stripe Onboarding
   <!-- - [x] Product CRUD + Pagination -->
   <!-- - [x] Cart & Checkout Flow -->
 

@@ -11,7 +11,7 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
   try {
     const token =
       req.cookies["access_token"] ||
-      req.cookies["seller-access_token"] ||
+      req.cookies["seller-access-token"] ||
       req.headers.authorization?.split(" ")[1];
 
     if (!token)

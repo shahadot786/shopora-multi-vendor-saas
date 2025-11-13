@@ -6,10 +6,8 @@
     "version": "1.0.0"
   },
   "host": "localhost:6001",
-  "basePath": "/",
-  "schemes": [
-    "http"
-  ],
+  "basePath": "/api",
+  "schemes": ["http"],
   "paths": {
     "/user-registration": {
       "post": {
@@ -98,12 +96,22 @@
         }
       }
     },
-    "/user-refresh-token": {
+    "/refresh-token": {
       "post": {
         "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }

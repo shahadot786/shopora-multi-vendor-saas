@@ -1,7 +1,7 @@
 import "./global.css";
 import Header from "@/shared/widgets/header";
 import { Providers } from "@shopora/providers";
-import { Poppins, Roboto, Gugi } from "next/font/google";
+import { Poppins, Roboto } from "next/font/google";
 
 export const metadata = {
   title: "Shopora",

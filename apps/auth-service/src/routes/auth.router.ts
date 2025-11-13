@@ -6,7 +6,7 @@ import {
   getUser,
   loginSeller,
   loginUser,
-  refreshUserToken,
+  refreshToken,
   registerSeller,
   userForgotPassword,
   userRegistration,
@@ -23,7 +23,7 @@ const router: Router = express.Router();
 router.post("/user-registration", userRegistration);
 router.post("/user-verify", verifyUser);
 router.post("/user-login", loginUser);
-router.post("/user-refresh-token", refreshUserToken);
+router.post("/refresh-token", refreshToken);
 router.get("/user-logged-in", isAuthenticated, isUser, getUser);
 router.post("/user-forgot-password", userForgotPassword);
 router.post("/user-verify-forgot-password", verifyUserForgotPassword);

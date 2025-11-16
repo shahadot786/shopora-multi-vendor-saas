@@ -30,7 +30,6 @@ const SidebarWrapper = () => {
   const { seller, isLoading } = useSeller();
 
   const pathname = usePathname();
-  console.log(seller);
   useEffect(() => {
     setActiveSidebar(pathname);
   }, [pathname, setActiveSidebar]);
@@ -55,14 +54,18 @@ const SidebarWrapper = () => {
         <Box>
           <Link href={"/"} className="flex justify-center text-center gap-2">
             <Logo />
-            <Box>
-              <h3 className="text-xl font-medium text-[#ecedee]">
-                {seller?.shop?.name || "Unknown Shop"}
-              </h3>
-              <h5 className="font-medium pl-2 text-xs text-[#ecedeecf] whitespace-nowrap overflow-hidden text-ellipsis max-w-[170px]">
-                {seller?.shop?.address || "Unknown Address"}
-              </h5>
-            </Box>
+            {isLoading ? (
+              <p>Loading...</p>
+            ) : (
+              <Box>
+                <h3 className="text-xl font-medium text-[#ecedee]">
+                  {seller?.shop?.name || "Unknown Shop"}
+                </h3>
+                <h5 className="font-medium pl-2 text-xs text-[#ecedeecf] whitespace-nowrap overflow-hidden text-ellipsis max-w-[170px]">
+                  {seller?.shop?.address || "Unknown Address"}
+                </h5>
+              </Box>
+            )}
           </Link>
         </Box>
       </Sidebar.Header>

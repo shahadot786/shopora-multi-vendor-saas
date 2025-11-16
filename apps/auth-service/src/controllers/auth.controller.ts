@@ -519,8 +519,12 @@ export const getSeller = async (
 ) => {
   try {
     const seller = req.seller;
-    const { password, ...rest } = seller; //exclude password
-    res.status(201).json({ success: true, seller: rest });
+    if (!seller) {
+      return res.status(404).json({ message: "Seller not found" });
+    }
+
+    const { password, ...rest } = seller;
+    res.status(200).json({ success: true, seller: rest });
   } catch (error) {
     return next(error);
   }

@@ -80,3 +80,27 @@ model sellers {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+
+// site config
+model site_configs {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  // Basic category system
+  categories      String[]
+  subCategories   Json
+  // Brands & variations
+  brands          String[]
+  colors          Json[] // [{ name: "...", hex: "..." }]
+  sizes           String[]
+  // Price filtering ranges
+  priceRanges     Json[] // [{ label: "...", min: 0, max: 100 }]
+  // Delivery systems
+  deliveryOptions Json[] // [{ name: "...", estimatedDays: 3 }]
+  // Payment methods
+  paymentMethods  String[]
+  // App-level configuration
+  appSettings     Json // { theme, currency, language, contactEmail, contactPhone }
+  // Social media links
+  socialLinks     Json // { facebook, instagram, youtube }
+  // Banner sliders
+  banners         Json[] // [{ id, title, image, link }]
+}

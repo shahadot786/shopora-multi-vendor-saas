@@ -4,6 +4,7 @@ import proxy from "express-http-proxy"; // reverse proxy middleware
 import morgan from "morgan"; // logging middleware
 import rateLimit, { ipKeyGenerator } from "express-rate-limit"; // rate limiter
 import cookieParser from "cookie-parser"; // cookie parsing
+import initializeSiteConfig from "./libs/initializeSiteConfig";
 
 const app = express(); // create app instance
 
@@ -40,11 +41,18 @@ app.get("/gateway-health", (req, res) => {
 });
 
 // proxy other requests to internal service
-app.use("/", proxy("http://localhost:6001"));
+app.use("/", proxy("http://localhost:6001")); //auth service
+app.use("/product", proxy("http://localhost:6002")); //product service
 
 // start server
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
+  try {
+    initializeSiteConfig();
+    console.log("Site config Initialized Successfully.");
+  } catch (error) {
+    console.log("Failed to initialize site config:", error);
+  }
 });
 server.on("error", console.error);

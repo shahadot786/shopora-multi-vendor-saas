@@ -13,6 +13,10 @@ type Props = InputProps | TextareaProps;
 
 const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, Props>(
   ({ label, type = "text", className, ...props }, ref) => {
+    const inputClass =
+      "w-full border outline-none border-gray-700 bg-transparent p-2 rounded-md text-white " +
+      className;
+
     return (
       <div className="w-full">
         {label && (
@@ -24,14 +28,14 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, Props>(
         {type === "textarea" ? (
           <textarea
             ref={ref as React.Ref<HTMLTextAreaElement>}
-            className={`w-full border outline-none border-gray-700 bg-transparent p-2 rounded-md text-white ${className}`}
+            className={inputClass}
             {...(props as TextareaProps)}
           />
         ) : (
           <input
             type={type}
             ref={ref as React.Ref<HTMLInputElement>}
-            className={`w-full border outline-none border-gray-700 bg-transparent p-2 rounded-md text-white ${className}`}
+            className={inputClass}
             {...(props as InputProps)}
           />
         )}

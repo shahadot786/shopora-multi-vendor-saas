@@ -41,8 +41,8 @@ app.get("/gateway-health", (req, res) => {
 });
 
 // proxy other requests to internal service
-app.use("/", proxy("http://localhost:6001")); //auth service
 app.use("/product", proxy("http://localhost:6002")); //product service
+app.use("/", proxy("http://localhost:6001")); //auth service
 
 // start server
 const port = process.env.PORT || 8080;

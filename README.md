@@ -116,8 +116,10 @@ Log ongoing progress and features:
 - [x] User Registration & Email Verification
 - [x] Seller Registration & Email Verification
 - [x] Seller Shop Creation & Stripe Onboarding
-  <!-- - [x] Product CRUD + Pagination -->
-  <!-- - [x] Cart & Checkout Flow -->
+- [x] Shop Product Service Creation
+- [x] Product CRUD
+- [x] Seller Dashboard
+<!-- - [x] Cart & Checkout Flow -->
 
 ### 🚧 In Progress
 

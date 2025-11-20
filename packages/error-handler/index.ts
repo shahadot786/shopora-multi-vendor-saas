@@ -1,3 +1,4 @@
+// Base AppError
 export class AppError extends Error {
   public readonly statusCode: number;
   public readonly isOperational: boolean;
@@ -17,45 +18,115 @@ export class AppError extends Error {
   }
 }
 
-//some common errors
-// not found error
-export class NotFoundError extends AppError {
-  constructor(message = "Resources not found!") {
-    super(message, 404);
+/* ---------------------------------------
+ * 4xx — Client Errors
+ * --------------------------------------*/
+
+// 400 — Bad Request
+export class BadRequestError extends AppError {
+  constructor(message = "Bad request", details?: any) {
+    super(message, 400, true, details);
   }
 }
 
-// validation errors (use for Joi/zod/react-hook-form like validation errors)
+// 400 — Validation Error (Joi/Zod etc)
 export class ValidationError extends AppError {
   constructor(message = "Invalid request data!", details?: any) {
     super(message, 400, true, details);
   }
 }
 
-// authentication error
+// 401 — Authentication
 export class AuthError extends AppError {
-  constructor(message = "Unauthorize") {
+  constructor(message = "Unauthorized") {
     super(message, 401);
   }
 }
 
-// forbidden error (for insufficient permissions)
+// 401 — JWT / Token Error
+export class TokenError extends AppError {
+  constructor(message = "Invalid or expired token") {
+    super(message, 401);
+  }
+}
+
+// 402 — Payment Required
+export class PaymentRequiredError extends AppError {
+  constructor(message = "Payment required") {
+    super(message, 402);
+  }
+}
+
+// 403 — Forbidden
 export class ForbiddenError extends AppError {
   constructor(message = "Forbidden access") {
     super(message, 403);
   }
 }
 
-// database error (for mongodb/postgres errors)
+// 404 — Resource Not Found
+export class NotFoundError extends AppError {
+  constructor(message = "Resource not found!") {
+    super(message, 404);
+  }
+}
+
+// 408 — Timeout
+export class TimeoutError extends AppError {
+  constructor(message = "Request timeout") {
+    super(message, 408);
+  }
+}
+
+// 409 — Conflict (Duplicate resource, already exists)
+export class ConflictError extends AppError {
+  constructor(message = "Resource already exists", details?: any) {
+    super(message, 409, true, details);
+  }
+}
+
+// 429 — Too Many Requests
+export class RateLimitError extends AppError {
+  constructor(message = "Too many requests, please try again later") {
+    super(message, 429);
+  }
+}
+
+// 440 — Session Expired (Used by dashboards)
+export class SessionExpiredError extends AppError {
+  constructor(message = "Session expired") {
+    super(message, 440);
+  }
+}
+
+/* ---------------------------------------
+ * 5xx — Server Errors
+ * --------------------------------------*/
+
+// 500 — Database Error (Mongo/Prisma/Postgres)
 export class DatabaseError extends AppError {
   constructor(message = "Database error", details?: any) {
     super(message, 500, true, details);
   }
 }
 
-// rate limit error (if user exceeds api limits)
-export class RateLimitError extends AppError {
-  constructor(message = "Too many requests, please try again later") {
-    super(message, 429);
+// 500 — File Upload Error (S3, Cloudinary, Multer)
+export class FileUploadError extends AppError {
+  constructor(message = "File upload failed", details?: any) {
+    super(message, 500, true, details);
+  }
+}
+
+// 502 — Integration Error (External APIs)
+export class IntegrationError extends AppError {
+  constructor(message = "External API error", details?: any) {
+    super(message, 502, true, details);
+  }
+}
+
+// 503 — Service Unavailable
+export class ServiceUnavailableError extends AppError {
+  constructor(message = "Service temporarily unavailable") {
+    super(message, 503);
   }
 }

@@ -38,7 +38,7 @@ const Page = () => {
         console.log("Product category does not get.", error);
       }
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60 * 1000, //cache time
     retry: 1,
   });
 

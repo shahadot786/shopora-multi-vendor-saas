@@ -26,14 +26,14 @@ const ColorSelector = ({ control, errors }: any) => {
         control={control}
         render={({ field }) => (
           <div className="flex gap-3 flex-wrap">
-            {[...defaultColors, ...customColors].map((color) => {
+            {[...defaultColors, ...customColors].map((color, index) => {
               const isSelected = (field.value || []).includes(color);
               const isLightColor = ["#ffffff", "#ffff00"].includes(color);
 
               return (
                 <button
                   type="button"
-                  key={color}
+                  key={color + index}
                   onClick={() =>
                     field.onChange(
                       isSelected

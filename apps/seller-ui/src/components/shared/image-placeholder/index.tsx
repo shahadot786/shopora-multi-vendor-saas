@@ -39,6 +39,7 @@ const ImagePlaceHolder = ({
       } w-full cursor-pointer bg-[#1e1e1e] border border-gray-600 rounded-lg flex flex-col justify-center items-center`}
     >
       <input
+        aria-label="Image Uploader"
         type="file"
         accept="image/*"
         className="hidden"
@@ -48,9 +49,10 @@ const ImagePlaceHolder = ({
       {imagePreview ? (
         <>
           <button
+            aria-label="Remove Icon Button"
             type="button"
-            onClick={() => onRemove?.(index!)}
-            className="absolute top-3 right-[60px] p-2 !rounded bg-red-600 shadow-lg"
+            onClick={() => onRemove?.(index ?? 0)}
+            className="absolute top-3 right-16 p-2 !rounded bg-red-600 shadow-lg"
           >
             <X size={16} />
           </button>

@@ -31,6 +31,7 @@ model users {
   shopReviews shopReviews[]
 }
 
+// for shop reviews
 model shopReviews {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   shopId    String   @db.ObjectId
@@ -43,6 +44,7 @@ model shopReviews {
   updatedAt DateTime @updatedAt
 }
 
+//for shop 
 model shops {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   name          String
@@ -68,6 +70,7 @@ model shops {
   updatedAt     DateTime      @updatedAt
 }
 
+//for seller
 model sellers {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   name         String
@@ -84,23 +87,27 @@ model sellers {
 // site config
 model site_configs {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  // Basic category system
   categories      String[]
   subCategories   Json
-  // Brands & variations
   brands          String[]
-  colors          Json[] // [{ name: "...", hex: "..." }]
+  colors          Json[]
   sizes           String[]
-  // Price filtering ranges
-  priceRanges     Json[] // [{ label: "...", min: 0, max: 100 }]
-  // Delivery systems
-  deliveryOptions Json[] // [{ name: "...", estimatedDays: 3 }]
-  // Payment methods
+  priceRanges     Json[]
+  deliveryOptions Json[]
   paymentMethods  String[]
-  // App-level configuration
-  appSettings     Json // { theme, currency, language, contactEmail, contactPhone }
-  // Social media links
-  socialLinks     Json // { facebook, instagram, youtube }
-  // Banner sliders
-  banners         Json[] // [{ id, title, image, link }]
+  appSettings     Json
+  socialLinks     Json
+  banners         Json[]
+}
+
+//for discount coupon
+model discount_coupon {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  public_name   String
+  discountType  String
+  discountValue Float
+  discountCode  String   @unique
+  sellerId      String   @db.ObjectId
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

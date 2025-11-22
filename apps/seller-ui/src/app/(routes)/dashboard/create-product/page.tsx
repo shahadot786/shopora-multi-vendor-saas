@@ -13,6 +13,15 @@ import axiosInstance from "@/utils/axiosInstance";
 import RichTextEditor from "../../../../../../../packages/components/rich-text-editor";
 import SizeSelector from "../../../../../../../packages/components/size-selector";
 
+type DiscountFormType = {
+  public_name: string;
+  discountType: "percentage" | "flat" | "";
+  discountValue: number;
+  discountCode: string;
+};
+
+type DiscountType = DiscountFormType & { id: string };
+
 const Page = () => {
   const [openImageModal, setOpenImageModal] = useState(false);
   const [isChanged, setIsChanged] = useState(true);
@@ -36,6 +45,25 @@ const Page = () => {
         return res.data;
       } catch (error) {
         console.log("Product category does not get.", error);
+      }
+    },
+    staleTime: 5 * 60 * 1000, //cache time
+    retry: 1,
+  });
+
+  //get the discounts
+  const {
+    data: discountData,
+    isLoading: discountIsLoading,
+    isError: discountIsError,
+  } = useQuery({
+    queryKey: ["discounts"],
+    queryFn: async () => {
+      try {
+        const res = await axiosInstance.get("/product/api/get-discount-codes");
+        return res.data.discountCodes;
+      } catch (error) {
+        console.log("Discount does not get.", error);
       }
     },
     staleTime: 5 * 60 * 1000, //cache time
@@ -502,6 +530,45 @@ const Page = () => {
                 <label className="block font-semibold text-gray-300 mb-1">
                   Select Discount Codes (optional)
                 </label>
+                {discountIsLoading ? (
+                  <p className="text-gray-400">Loading Discount..</p>
+                ) : discountIsError ? (
+                  <p className="text-red-500">Failed to load discount.</p>
+                ) : (
+                  <Controller
+                    name="discount_codes"
+                    control={control}
+                    render={({ field }) => (
+                      <select
+                        {...field}
+                        className="w-full border outline-none border-gray-700 bg-transparent rounded-md p-1"
+                      >
+                        <option value="" className="bg-black">
+                          Select Discount
+                        </option>
+
+                        {discountData?.map((discount: DiscountType) => (
+                          <option
+                            key={discount.id}
+                            value={discount.discountCode}
+                            className="bg-black"
+                          >
+                            {`${discount.discountCode.split("_").join(" ")} (${
+                              discount.discountType === "percentage"
+                                ? discount.discountValue + "%"
+                                : "$" + discount.discountValue
+                            })`}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  />
+                )}
+                {errors.discount_codes && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.discount_codes.message as string}
+                  </p>
+                )}
               </div>
             </div>
           </div>

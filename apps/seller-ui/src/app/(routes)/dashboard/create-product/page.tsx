@@ -86,34 +86,56 @@ const Page = () => {
     console.log(data);
   };
 
-  const handleImageChange = (file: File | null, index: number) => {
-    const updateImages = [...images];
-    updateImages[index] = file;
+  const convertFileToBase64 = async (file: File) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+  };
 
-    if (index === images.length - 1 && images.length < 8) {
-      updateImages.push(null);
+  const handleImageChange = async (file: File | null, index: number) => {
+    if (!file) {
+      return;
     }
-
-    setImages(updateImages);
-    setValue("images", updateImages);
+    try {
+      const base64 = await convertFileToBase64(file);
+      const response = await axiosInstance.post(
+        "/product/api/upload-product-image",
+        {
+          file: base64,
+        }
+      );
+      const updateImages = [...images];
+      updateImages[index] = response.data.file_name;
+      if (index === images.length - 1 && images.length < 8) {
+        updateImages.push(null);
+      }
+      setImages(updateImages);
+      setValue("images", updateImages);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleRemoveImage = (index: number) => {
-    setImages((prevImages) => {
-      let updateImages = [...prevImages];
-      if (index === -1) {
-        updateImages[0] = null;
-      } else {
-        updateImages.splice(index, 1);
+    try {
+      const updateImages = [...images];
+      const imageToDelete = updateImages[index];
+      if (imageToDelete && typeof imageToDelete === "string") {
+        axiosInstance.delete(
+          `/product/api/delete-product-image/${imageToDelete}`
+        );
       }
-
-      if (!updateImages.includes(null) && updateImages.length < 8) {
+      updateImages.splice(index, 1);
+      setImages(updateImages);
+      if (updateImages.length < 8) {
         updateImages.push(null);
       }
-      return updateImages;
-    });
-
-    setValue("images", images);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleSaveDraft = () => {};
@@ -587,7 +609,7 @@ const Page = () => {
         <button
           type="button"
           className="px-4 py-2 bg-blue-600 text-white rounded-md"
-          onClick={onSubmit}
+          onClick={handleSubmit(onSubmit)}
           disabled={isLoading}
         >
           {loading ? "Creating..." : "Create"}

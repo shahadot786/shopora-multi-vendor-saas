@@ -108,7 +108,7 @@ const Page = () => {
         }
       );
       const updateImages = [...images];
-      updateImages[index] = response.data.file_name;
+      updateImages[index] = response.data.file_url;
       if (index === images.length - 1 && images.length < 8) {
         updateImages.push(null);
       }
@@ -129,10 +129,12 @@ const Page = () => {
         );
       }
       updateImages.splice(index, 1);
-      setImages(updateImages);
-      if (updateImages.length < 8) {
+
+      if (!updateImages.includes(null) && updateImages.length < 8) {
         updateImages.push(null);
       }
+      setImages(updateImages);
+      setValue("images", updateImages);
     } catch (error) {
       console.log(error);
     }

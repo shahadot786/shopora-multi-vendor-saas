@@ -5,6 +5,7 @@ import {
   getCategories,
   getDiscountCodes,
   updateDiscountCode,
+  uploadProductImage,
 } from "../controllers/product.controller";
 import isAuthenticated from "@packages/middleware/isAuthenticated";
 
@@ -15,5 +16,6 @@ router.post("/create-discount-codes", isAuthenticated, createDiscountCode);
 router.get("/get-discount-codes", isAuthenticated, getDiscountCodes);
 router.delete("/delete-discount-code/:id", isAuthenticated, deleteDiscountCode);
 router.put("/update-discount-code/:id", isAuthenticated, updateDiscountCode);
+router.post("/upload-product-image", isAuthenticated, uploadProductImage);
 
 export default router;

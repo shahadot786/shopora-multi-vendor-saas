@@ -51,6 +51,15 @@ export const errorMiddleware: ErrorRequestHandler = (
     });
   }
 
+  // Payload too large errors
+
+  if (err.code === "PayloadTooLargeError") {
+    return res.status(413).json({
+      success: false,
+      message: "Payload too large. File size limit exceeded.",
+    });
+  }
+
   // Fallback Unhandled Error
   console.error("Unhandled Error:", err);
 

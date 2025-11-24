@@ -18,8 +18,8 @@ app.use(
 );
 
 app.use(morgan("dev")); // log incoming requests (dev-friendly)
-app.use(express.json({ limit: "100mb" })); // parse JSON bodies, limit size
-app.use(express.urlencoded({ limit: "100mb", extended: true })); // parse urlencoded bodies
+app.use(express.json({ limit: "10mb" })); // parse JSON bodies, limit size
+app.use(express.urlencoded({ limit: "10mb", extended: true })); // parse urlencoded bodies
 app.use(cookieParser()); // parse cookies into req.cookies
 
 app.set("trust proxy", 1); // trust first proxy for req.ip and secure cookies
@@ -41,25 +41,8 @@ app.get("/gateway-health", (req, res) => {
 });
 
 // proxy other requests to internal service
-app.use(
-  "/product",
-  proxy("http://localhost:6002", {
-    limit: "100mb",
-    proxyReqBodyDecorator(body) {
-      return body;
-    },
-  })
-);
-
-app.use(
-  "/",
-  proxy("http://localhost:6001", {
-    limit: "100mb",
-    proxyReqBodyDecorator(body) {
-      return body;
-    },
-  })
-);
+app.use("/product", proxy("http://localhost:6002"));
+app.use("/", proxy("http://localhost:6001"));
 
 // start server
 const port = process.env.PORT || 8080;

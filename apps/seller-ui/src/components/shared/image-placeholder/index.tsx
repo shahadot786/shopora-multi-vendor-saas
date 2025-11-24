@@ -2,6 +2,10 @@ import { Pencil, WandSparkles, X } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
 
+interface UploadedImage {
+  fileId: string;
+  file_url: string;
+}
 interface ImageProps {
   size: string;
   small?: boolean;
@@ -10,6 +14,9 @@ interface ImageProps {
   defaultImage?: string | null;
   setOpenImageModal: (openImageModal: boolean) => void;
   index?: any;
+  setSelectedImage: (image: string) => void;
+  images: (UploadedImage | null)[];
+  imageLoader: boolean;
 }
 
 const ImagePlaceHolder = ({
@@ -19,12 +26,14 @@ const ImagePlaceHolder = ({
   onRemove,
   defaultImage,
   setOpenImageModal,
+  setSelectedImage,
   index,
+  images,
+  imageLoader,
 }: ImageProps) => {
   const [imagePreview, setImagePreview] = useState<string | null | undefined>(
     defaultImage
   );
-
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -49,6 +58,7 @@ const ImagePlaceHolder = ({
       {imagePreview ? (
         <>
           <button
+            disabled={imageLoader}
             aria-label="Remove Icon Button"
             type="button"
             onClick={() => onRemove?.(index ?? 0)}
@@ -57,8 +67,12 @@ const ImagePlaceHolder = ({
             <X size={16} />
           </button>
           <button
+            disabled={imageLoader}
             className="absolute top-3 right-3 p-2 !rounded bg-blue-500 shadow-lg"
-            onClick={() => setOpenImageModal(true)}
+            onClick={() => {
+              setOpenImageModal(true);
+              setSelectedImage(images[index]?.file_url ?? "");
+            }}
           >
             <WandSparkles size={16} />
           </button>

@@ -2,6 +2,7 @@ import express, { Router } from "express";
 import {
   createDiscountCode,
   deleteDiscountCode,
+  deleteProductImage,
   getCategories,
   getDiscountCodes,
   updateDiscountCode,
@@ -17,5 +18,6 @@ router.get("/get-discount-codes", isAuthenticated, getDiscountCodes);
 router.delete("/delete-discount-code/:id", isAuthenticated, deleteDiscountCode);
 router.put("/update-discount-code/:id", isAuthenticated, updateDiscountCode);
 router.post("/upload-product-image", isAuthenticated, uploadProductImage);
+router.delete("/delete-product-image", isAuthenticated, deleteProductImage);
 
 export default router;

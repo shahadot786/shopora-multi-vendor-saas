@@ -1,6 +1,6 @@
 "use client";
 import ImagePlaceHolder from "@/components/shared/image-placeholder";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, X } from "lucide-react";
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "@/utils/axiosInstance";
 import RichTextEditor from "../../../../../../../packages/components/rich-text-editor";
 import SizeSelector from "../../../../../../../packages/components/size-selector";
+import Image from "next/image";
 
 type DiscountFormType = {
   public_name: string;
@@ -22,10 +23,17 @@ type DiscountFormType = {
 
 type DiscountType = DiscountFormType & { id: string };
 
+interface UploadedImage {
+  fileId: string;
+  file_url: string;
+}
+
 const Page = () => {
   const [openImageModal, setOpenImageModal] = useState(false);
+  const [imageLoader, setImageLoader] = useState(false);
   const [isChanged, setIsChanged] = useState(true);
-  const [images, setImages] = useState<(File | null)[]>([null]);
+  const [selectedImage, setSelectedImage] = useState("");
+  const [images, setImages] = useState<(UploadedImage | null)[]>([null]);
   const [loading, setLoading] = useState(false);
   const {
     register,
@@ -99,6 +107,7 @@ const Page = () => {
     if (!file) {
       return;
     }
+    setImageLoader(true);
     try {
       const base64 = await convertFileToBase64(file);
       const response = await axiosInstance.post(
@@ -107,26 +116,38 @@ const Page = () => {
           file: base64,
         }
       );
+
+      const uploadedImage: UploadedImage = {
+        fileId: response.data.fileId,
+        file_url: response.data.file_url,
+      };
+
       const updateImages = [...images];
-      updateImages[index] = response.data.file_url;
+
+      updateImages[index] = uploadedImage;
+
       if (index === images.length - 1 && images.length < 8) {
         updateImages.push(null);
       }
       setImages(updateImages);
       setValue("images", updateImages);
+      setImageLoader(false);
     } catch (error) {
+      setImageLoader(false);
       console.log(error);
     }
   };
 
-  const handleRemoveImage = (index: number) => {
+  const handleRemoveImage = async (index: number) => {
     try {
       const updateImages = [...images];
       const imageToDelete = updateImages[index];
-      if (imageToDelete && typeof imageToDelete === "string") {
-        axiosInstance.delete(
-          `/product/api/delete-product-image/${imageToDelete}`
-        );
+      if (imageToDelete && typeof imageToDelete === "object") {
+        await axiosInstance.delete(`/product/api/delete-product-image`, {
+          data: {
+            fileId: imageToDelete.fileId,
+          },
+        });
       }
       updateImages.splice(index, 1);
 
@@ -141,6 +162,7 @@ const Page = () => {
   };
 
   const handleSaveDraft = () => {};
+  console.log(selectedImage, "seleted");
 
   return (
     <form
@@ -165,10 +187,13 @@ const Page = () => {
             <ImagePlaceHolder
               size="765 x 850"
               setOpenImageModal={setOpenImageModal}
+              setSelectedImage={setSelectedImage}
               onImageChange={handleImageChange}
               small={false}
               index={0}
               onRemove={handleRemoveImage}
+              images={images}
+              imageLoader={imageLoader}
             />
           )}
           <div className="grid grid-cols-2 gap-3 mt-4">
@@ -177,10 +202,13 @@ const Page = () => {
                 key={index}
                 size="765 x 850"
                 setOpenImageModal={setOpenImageModal}
+                setSelectedImage={setSelectedImage}
                 onImageChange={handleImageChange}
                 small
                 index={index + 1}
                 onRemove={handleRemoveImage}
+                images={images}
+                imageLoader={imageLoader}
               />
             ))}
           </div>
@@ -598,6 +626,31 @@ const Page = () => {
           </div>
         </div>
       </div>
+      {openImageModal && (
+        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-60 z-50">
+          <div className="bg-gray-800  p-6 rounded-lg w-[450px] text-white">
+            <div className="flex justify-between items-center pb-3 mb-4">
+              <h2 className="text-lg font-semibold">Enhance Product Image</h2>
+              <X
+                size={20}
+                className="cursor-pointer"
+                onClick={() => setOpenImageModal(!openImageModal)}
+              />
+            </div>
+            <div className="relative w-full h-[250px] rounded-md overflow-hidden border border-gray-600">
+              <Image src={selectedImage} layout="fill" alt="Enhanced Image" />
+            </div>
+            {selectedImage && (
+              <div className="mt-4 space-y-2">
+                <h3 className="text-white text-sm font-semibold">
+                  AI Enhancements
+                </h3>
+                <div className="grid grid-cols-2 gap-3 mx-h-[250px] overflow-y-auto"></div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <div className="mt-6 flex justify-end gap-3">
         {isChanged && (
           <button

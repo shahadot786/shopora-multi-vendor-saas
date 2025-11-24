@@ -124,6 +124,16 @@ export class IntegrationError extends AppError {
   }
 }
 
+// 413 — Payload TooLarge Error
+export class PayloadTooLargeError extends AppError {
+  constructor(
+    message = "Payload too large. File size limit exceeded.",
+    details?: any
+  ) {
+    super(message, 413, true, details);
+  }
+}
+
 // 503 — Service Unavailable
 export class ServiceUnavailableError extends AppError {
   constructor(message = "Service temporarily unavailable") {

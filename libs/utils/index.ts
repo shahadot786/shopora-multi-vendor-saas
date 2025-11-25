@@ -6,3 +6,4 @@ export {
   getPasswordStrength,
   validatePhone,
 } from "../utils/authFieldsValidations";
+export { enhancements } from "../utils/AI.enhancements";

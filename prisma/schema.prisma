@@ -7,50 +7,45 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// for user avatar images
-model images {
-  id      String  @id @default(auto()) @map("_id") @db.ObjectId
-  file_id String
-  url     String
-  userId  String? @unique @db.ObjectId
-  shopId  String? @unique @db.ObjectId
-  users   users?  @relation(fields: [userId], references: [id])
-  shops   shops?  @relation(fields: [shopId], references: [id])
-}
+//
+// ─────────────────────────────────────────────
+// USERS + AVATAR IMAGE
+// ─────────────────────────────────────────────
+//
 
-// for users model
 model users {
   id          String        @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   email       String        @unique
   password    String?
   following   String[]
-  avatar      images?
+  avatar      images_user?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   shopReviews shopReviews[]
 }
 
-// for shop reviews
-model shopReviews {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  shopId    String   @db.ObjectId
-  userId    String   @db.ObjectId
-  user      users    @relation(fields: [userId], references: [id])
-  rating    Float
-  reviews   String?
-  shops     shops?   @relation(fields: [shopId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model images_user {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  file_id String
+  url     String
+  userId  String? @unique @db.ObjectId
+
+  user users? @relation(fields: [userId], references: [id])
 }
 
-//for shop 
+//
+// ─────────────────────────────────────────────
+// SHOPS + AVATAR IMAGE
+// ─────────────────────────────────────────────
+//
+
 model shops {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   name          String
   description   String
   category      String
-  avatar        images?
+  avatar        images_shop?
   coverBanner   String?
   address       String
   opening_hours String?
@@ -68,23 +63,62 @@ model shops {
   country       String
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  products      products[]
 }
 
-//for seller
+model images_shop {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  file_id String
+  url     String
+  shopId  String? @unique @db.ObjectId
+
+  shop shops? @relation(fields: [shopId], references: [id])
+}
+
+//
+// ─────────────────────────────────────────────
+// SHOP REVIEWS
+// ─────────────────────────────────────────────
+//
+
+model shopReviews {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  shopId    String   @db.ObjectId
+  userId    String   @db.ObjectId
+  user      users    @relation(fields: [userId], references: [id])
+  rating    Float
+  reviews   String?
+  shops     shops?   @relation(fields: [shopId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//
+// ─────────────────────────────────────────────
+// SELLERS
+// ─────────────────────────────────────────────
+//
+
 model sellers {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String          @id @default(auto()) @map("_id") @db.ObjectId
   name         String
-  email        String   @unique
+  email        String          @unique
   password     String
   phone_number String
   country      String
   stripeId     String?
   shop         shops?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  productLinks ProductSeller[] // join table
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 }
 
-// site config
+//
+// ─────────────────────────────────────────────
+// SITE CONFIG
+// ─────────────────────────────────────────────
+//
+
 model site_configs {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   categories      String[]
@@ -100,7 +134,12 @@ model site_configs {
   banners         Json[]
 }
 
-//for discount coupon
+//
+// ─────────────────────────────────────────────
+// DISCOUNT COUPON
+// ─────────────────────────────────────────────
+//
+
 model discount_coupon {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   public_name   String
@@ -110,4 +149,90 @@ model discount_coupon {
   sellerId      String   @db.ObjectId
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+//
+// ─────────────────────────────────────────────
+// ENUM
+// ─────────────────────────────────────────────
+//
+
+enum Status {
+  active
+  inactive
+  draft
+}
+
+//
+// ─────────────────────────────────────────────
+// PRODUCT IMAGES (one product → many images)
+// ─────────────────────────────────────────────
+//
+
+model product_images {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  file_id   String
+  url       String
+  productId String @db.ObjectId
+
+  product products @relation(fields: [productId], references: [id])
+}
+
+//
+// ─────────────────────────────────────────────
+// PRODUCT  (Mongo-safe relations)
+// ─────────────────────────────────────────────
+//
+
+model products {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  shopId String @db.ObjectId
+  Shop   shops  @relation(fields: [shopId], references: [id])
+
+  brand                 String?
+  cash_on_delivery      String?
+  category              String
+  colors                String[]
+  customProperties      Json[]
+  custom_specifications Json[]
+  description           String
+  detailed_description  String
+  discount_codes        String[]
+  status                Status   @default(active)
+  regular_price         Float
+  sale_price            Float
+  sizes                 String[]
+  slug                  String
+  stock                 Int
+  subcategory           String
+  tags                  String?
+  title                 String
+  warranty              String?
+  youtube_video_url     String?
+
+  images      product_images[]
+  sellerLinks ProductSeller[] // many-to-many join
+
+  ratings       Float     @default(5)
+  isDeleted     Boolean   @default(false)
+  starting_date DateTime?
+  ending_date   DateTime?
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+//
+// ─────────────────────────────────────────────
+// MANY-TO-MANY JOIN TABLE (MongoDB required)
+// ─────────────────────────────────────────────
+//
+
+model ProductSeller {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  productId String @db.ObjectId
+  sellerId  String @db.ObjectId
+
+  product products @relation(fields: [productId], references: [id])
+  seller  sellers  @relation(fields: [sellerId], references: [id])
 }

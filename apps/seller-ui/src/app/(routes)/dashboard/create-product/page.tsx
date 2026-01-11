@@ -61,7 +61,7 @@ const Page = () => {
     staleTime: 5 * 60 * 1000, //cache time
     retry: 1,
   });
-
+  console.log(errors, "err");
   //get the discounts
   const {
     data: discountData,
@@ -257,7 +257,7 @@ const Page = () => {
                     validate: (value) => {
                       const wordCount = value.trim().split(/\s+/).length;
                       return (
-                        wordCount > 150 ||
+                        wordCount <= 150 ||
                         `Description cannot exceed 150 words (Current: ${wordCount})`
                       );
                     },
@@ -307,7 +307,7 @@ const Page = () => {
                   {...register("slug", {
                     required: "Slug is required",
                     pattern: {
-                      value: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+                      value: /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/s,
                       message:
                         "Invalid slug format! Use only lowercase letters, numbers, and underscore.",
                     },
@@ -579,7 +579,7 @@ const Page = () => {
                       message: "Stock cannot exceed 1,000",
                     },
                     validate: (val) => {
-                      if (!isNaN(val)) return "Only number are allowed.";
+                      if (isNaN(val)) return "Only number are allowed.";
                       if (!Number.isInteger(val))
                         return "Stock must be a whole number.";
                       return true;

@@ -1,4 +1,8 @@
-import { NotFoundError, ValidationError } from "@packages/error-handler";
+import {
+  AuthError,
+  NotFoundError,
+  ValidationError,
+} from "@packages/error-handler";
 import { imagekit } from "@packages/libs/imagekit";
 import prisma from "@packages/libs/prisma";
 import { NextFunction, Request, Response } from "express";
@@ -200,6 +204,98 @@ export const deleteProductImage = async (
       response,
       message: "Product image deleted successfully.",
     });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// create product
+export const createProduct = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      brand,
+      cash_on_delivery,
+      category,
+      colors = [],
+      customProperties = [],
+      custom_specifications,
+      description,
+      detailed_description,
+      discount_codes,
+      images = [],
+      regular_price,
+      sale_price,
+      sizes = [],
+      slug,
+      stock,
+      subcategory,
+      tags,
+      title,
+      warranty,
+      youtube_video_url,
+    } = req.body;
+
+    if (
+      !title ||
+      !slug ||
+      !description ||
+      !images ||
+      !stock ||
+      !regular_price ||
+      !sale_price ||
+      !category ||
+      !subcategory ||
+      !tags
+    ) {
+      return next(new ValidationError("Missing required fields."));
+    }
+
+    if (!req.seller.id) {
+      return next(new AuthError("Seller not found."));
+    }
+
+    const slugChecking = await prisma.products.findUnique({
+      where: { slug },
+    });
+
+    if (slugChecking) {
+      return next(new ValidationError("Slug already exists."));
+    }
+    const product = await prisma.products.create({
+        data: {
+          brand,
+          cash_on_delivery,
+          category,
+          colors,
+          customProperties,
+          custom_specifications,
+          description,
+          detailed_description,
+          discount_codes,
+          images,
+          regular_price,
+          sale_price,
+          sizes,
+          slug,
+          stock,
+          subcategory,
+          tags,
+          title,
+          warranty,
+          youtube_video_url,
+        },
+      });
+      return res.status(201).json({
+        success: true,
+        message: "Product created successfully.",
+        product,
+      });
+      
+    
   } catch (error) {
     return next(error);
   }
